@@ -1,7 +1,7 @@
 package SDhulb;
 
-public class SDhulb {
-    static String vStr = "0.0.0.1"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
+public class SDhulb { /*Built not to handle: non UTF-8 source files  */
+    static String vStr = "0.0.0.2"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
     public static boolean wasErr = false;
     public static String errMsg = null;
     public static void main(String[] args) {
