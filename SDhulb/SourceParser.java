@@ -35,9 +35,30 @@ public class SourceParser {
                             starflag = false;
                         }
                         String str = sb.toString();
-                        if (str.matches("^/\\*[\\s*]*@Dhulb.*$")) {
+                        if (str.matches("(?s)/\\*[\\s*]*@Dhulb.*")) {
                             lst.add(new Token<String>(TokenType.Comment, str));
                         }
+                    } else if (tchar == '&' || tchar == '%') {
+                        boolean eflag = false;// whether the last character was the one used to open the assembly
+                        while (true) {// go through assembly
+                            cchar = fIn.read();
+                            sb.append((char) cchar);
+                            if (cchar == tchar) {
+                                eflag = true;
+                                continue;
+                            }
+                            if (eflag && cchar == '/') {
+                                break;
+                            }
+                            eflag = false;
+                        }
+                        TokenType ttype = null;
+                        if (tchar == '&') {
+                            ttype = TokenType.TextAsm;
+                        } else {
+                            ttype = TokenType.DataAsm;
+                        }
+                        lst.add(new Token<String>(ttype, sb.substring(1, sb.length()-2)));
                     }
                 }
                 cchar = fIn.read();

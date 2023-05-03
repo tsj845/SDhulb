@@ -1,2 +1,3 @@
-04-19-2023, commit 1: (VARIOUS) initial boilerplate
-04-19-2023, commit 2: (SourceParser.java) file reading, support for @Dhulb comments
+04-19-2023, commit 0001: (VARIOUS) initial boilerplate
+04-19-2023, commit 0002: (SourceParser.java) file reading, support for @Dhulb comments
+05-03-2023, commit 0003: (VARIOUS) minor bug fix + support for text and data assembly

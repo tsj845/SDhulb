@@ -1,0 +1,10 @@
+/*
+@Dhulb
+comment
+*/
+/&
+/*text asm*/
+&/
+/%
+/*data asm*/
+%/

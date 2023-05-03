@@ -7,4 +7,13 @@ public class Token<T> {
         this.type = type;
         this.data = data;
     }
+    public String toString() {
+        String v;
+        if (data.getClass() == String.class) {
+            v = data.toString().replace("\n", "\\n");
+        } else {
+            v = data.toString();
+        }
+        return "Token<"+type+">("+v+")";
+    }
 }
