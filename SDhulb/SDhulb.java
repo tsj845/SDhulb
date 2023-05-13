@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SDhulb { /*Built not to handle: non UTF-8 source files  */
-    static String vStr = "0.0.0.4"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
+    static String vStr = "0.0.0.5"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
     public static ArrayList<String> typlst = new ArrayList<>();
     public static boolean wasErr = false;
     public static String errMsg = null;
@@ -71,7 +71,12 @@ public class SDhulb { /*Built not to handle: non UTF-8 source files  */
         }
         Fmt.printOk("SOURCE: " + args[0] + " DESTINATION: " + args[1]);
         if (args[1].equalsIgnoreCase("-")) {
-            System.out.println(Arrays.toString(SourceParser.parse(args[0]).toArray()));
+            ArrayList<Token<?>> res = SourceParser.parse(args[0]);
+            if (wasErr) {
+                Fmt.printErr(errMsg);
+                return;
+            }
+            System.out.println(Arrays.toString(res.toArray()));
         }
     }
 }

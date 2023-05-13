@@ -83,7 +83,6 @@ public class SourceParser {
                         }
                         int start = tok.codePointAt(0);
                         int end = tok.codePointAt(l-1);
-                        Fmt.printInfo(tok);
                         if (Character.isDigit(start)) {// number
                             if (l == 1) {// s32
                                 lst.add(new Token<Integer>(TokenType.Literal, Integer.parseInt(tok)));
@@ -139,15 +138,13 @@ public class SourceParser {
                     }
                 }
                 cchar = fIn.read();
-                System.out.print(cchar);
-                System.out.print(' ');
             }
         } catch (Exception E) {// internal exception, get stack trace
             SDhulb.wasErr = true;
             StringBuilder sb = new StringBuilder();
             StackTraceElement[] ste = E.getStackTrace();
             for (StackTraceElement st : ste) {
-                sb.append(st.toString());
+                sb.append(st.toString()+"\n");
             }
             SDhulb.errMsg = sb.toString();
         }
