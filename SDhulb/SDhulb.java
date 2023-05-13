@@ -1,11 +1,33 @@
 package SDhulb;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SDhulb { /*Built not to handle: non UTF-8 source files  */
-    static String vStr = "0.0.0.3"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
+    static String vStr = "0.0.0.4"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
+    public static ArrayList<String> typlst = new ArrayList<>();
     public static boolean wasErr = false;
     public static String errMsg = null;
+    public static char[] typchars = new char[]{' ', '$', '(', ')', '*', ',', '<', '>'};
+    public static boolean isValidTypeChar(char test) {
+        int min = 0;
+        int max = typchars.length;
+        while (true) {
+            if (max == min) {
+                break;
+            }
+            int mid = (max-min)/2+min;
+            if (typchars[mid] == test) {
+                return true;
+            }
+            if (typchars[mid] > test) {
+                max = mid;
+            } else {
+                min = mid;
+            }
+        }
+        return false;
+    }
     public static void main(String[] args) {
         if (args.length == 0 || args[0].equalsIgnoreCase("--help")) {
             System.out.println("sDhulb --[help|version]\nsDhulb --test [cat] [spec]\nsDhulb [source] [destination]");
@@ -48,6 +70,8 @@ public class SDhulb { /*Built not to handle: non UTF-8 source files  */
             return;
         }
         Fmt.printOk("SOURCE: " + args[0] + " DESTINATION: " + args[1]);
-        System.out.println(Arrays.toString(SourceParser.parse(args[0]).toArray()));
+        if (args[1].equalsIgnoreCase("-")) {
+            System.out.println(Arrays.toString(SourceParser.parse(args[0]).toArray()));
+        }
     }
 }

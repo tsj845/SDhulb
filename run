@@ -1,0 +1,4 @@
+#!/bin/sh
+
+javac SDhulb/SourceParser.java
+java SDhulb/SDhulb "${1:-tst.txt}" "-"

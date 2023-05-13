@@ -14,6 +14,6 @@ public class Token<T> {
         } else {
             v = data.toString();
         }
-        return "Token<"+type+">("+v+")";
+        return "Token<"+type+","+data.getClass().getSimpleName()+">("+v+")";
     }
 }
