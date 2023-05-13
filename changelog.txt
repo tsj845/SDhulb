@@ -1,4 +1,4 @@
 04-19-2023, commit 0001: (VARIOUS) initial boilerplate
 04-19-2023, commit 0002: (SourceParser.java) file reading, support for @Dhulb comments
 05-03-2023, commit 0003: (VARIOUS) minor bug fix + support for text and data assembly
-05-11-2023, commit 0004: (VARIOUS) implement number parsing
+05-13-2023, commit 0004: (VARIOUS) implement number parsing
