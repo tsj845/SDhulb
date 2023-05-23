@@ -3,8 +3,72 @@ package SDhulb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SourceParser {
+    private static ArrayList<Token<?>> postprocess(ArrayList<Token<?>> lst) {
+        int i = 0;
+        while (i < lst.size()) {
+            Token<?> tok = lst.get(i);
+            if (tok.type == TokenType.Word) {
+                int ind = Arrays.binarySearch(SDhulb.keywords, tok.data);
+                if (ind >= 0) {
+                    tok.type = TokenType.Keyword;
+                    switch (ind) {
+                        case 4:// class
+                        case 14:// interface
+                        case 23:// typealias
+                        case 24:// typedef
+                        case 25:// typefullalias
+                            Token<?> nt = lst.get(i+1);
+                            SDhulb.typlst.add((String)nt.data);
+                            nt.type = TokenType.Type;
+                            break;
+                        case 8:// false
+                            lst.set(i, new Token<Byte>(TokenType.Literal, (byte)0));
+                            break;
+                        case 16:// null
+                            lst.set(i, new Token<Byte>(TokenType.RawAddr, (byte)0));
+                            break;
+                        case 18:// struct
+                        case 19:// structure
+                            lst.set(i, new Token<String>(TokenType.Word, "class"));
+                            i --;
+                            break;
+                        case 22:// true
+                            lst.set(i, new Token<Byte>(TokenType.Literal, (byte)1));
+                            break;
+                        default:
+                            break;
+                    }
+                } else if (SDhulb.typlst.contains(tok.data)) {
+                    tok.type = TokenType.Type;
+                } else if (i > 0 && lst.get(i-1).type == TokenType.Type) {
+                    tok.type = TokenType.Name;
+                }
+            }
+            if (tok.type == TokenType.Type) {
+                String f = (String)tok.data;
+                while (i > 0) {
+                    Token<?> lt = lst.get(i-1);
+                    if ((lt.type == TokenType.Symbol || lt.type == TokenType.Operator) && lt.data instanceof Character) {
+                        if ((char)lt.data == '*') {
+                            f = "*" + f;
+                            lst.remove(i-1);
+                            i --;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                lst.set(i, new Token<String>(TokenType.Type, f));
+            }
+            i ++;
+        }
+        return lst;
+    }
     public static ArrayList<Token<?>> parse(String source) {// parse source file into token array
         ArrayList<Token<?>> lst = new ArrayList<>();
         try (FileInputStream fIn = new FileInputStream(new File(source))) {
@@ -134,6 +198,8 @@ public class SourceParser {
                                     }
                                 }
                             }
+                        } else {
+                            lst.add(new Token<String>(TokenType.Word, tok));
                         }
                     }
                 }
@@ -148,6 +214,6 @@ public class SourceParser {
             }
             SDhulb.errMsg = sb.toString();
         }
-        return lst;
+        return postprocess(lst);
     }
 }

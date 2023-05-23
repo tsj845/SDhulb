@@ -3,3 +3,4 @@
 05-03-2023, commit 0003: (VARIOUS) minor bug fix + support for text and data assembly
 05-13-2023, commit 0004: (VARIOUS) implement number parsing
 05-13-2023, commit 0005: (SDhulb.java, SourceParser.java) fixed exceptions
+05-23-2023, commit 0006: (SDhulb.java, SourceParser.java) added types
