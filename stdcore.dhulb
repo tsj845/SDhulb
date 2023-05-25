@@ -1,0 +1,5 @@
+#info "///STDCORE///"
+
+u8 exit(u8 code) {
+    return code;
+}

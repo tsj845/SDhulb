@@ -2,10 +2,20 @@ package SDhulb;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class SourceParser {
+    private static boolean coreused = false;
+    private static boolean usecore = true;
+    private static int parsedepth = 0;
+    private static HashSet<String> imported = new HashSet<>();
+    public static String stdlibpath = ".";
+    public static Path resolveStdlib(String name) {
+        return Path.of(stdlibpath, name);
+    }
     private static ArrayList<Token<?>> postprocess(ArrayList<Token<?>> lst) {
         int i = 0;
         while (i < lst.size()) {
@@ -17,9 +27,9 @@ public class SourceParser {
                     switch (ind) {
                         case 4:// class
                         case 14:// interface
-                        case 23:// typealias
-                        case 24:// typedef
-                        case 25:// typefullalias
+                        case 24:// typealias
+                        case 25:// typedef
+                        case 26:// typefullalias
                             Token<?> nt = lst.get(i+1);
                             SDhulb.typlst.add((String)nt.data);
                             nt.type = TokenType.Type;
@@ -30,12 +40,12 @@ public class SourceParser {
                         case 16:// null
                             lst.set(i, new Token<Byte>(TokenType.RawAddr, (byte)0));
                             break;
-                        case 18:// struct
-                        case 19:// structure
+                        case 19:// struct
+                        case 20:// structure
                             lst.set(i, new Token<String>(TokenType.Word, "class"));
                             i --;
                             break;
-                        case 22:// true
+                        case 23:// true
                             lst.set(i, new Token<Byte>(TokenType.Literal, (byte)1));
                             break;
                         default:
@@ -69,11 +79,80 @@ public class SourceParser {
         }
         return lst;
     }
-    public static ArrayList<Token<?>> parse(String source) {// parse source file into token array
-        ArrayList<Token<?>> lst = new ArrayList<>();
+    public static ArrayList<Token<?>> parse(String source) {
+        return parse(source, new ArrayList<>());
+    }
+    private static ArrayList<Token<?>> parse(String source, ArrayList<Token<?>> lst) {
+        String abs = Path.of(source).toAbsolutePath().toString();
+        if (imported.contains(abs)) {// don't include stuff more than once
+            return lst;
+        }
+        imported.add(abs);
+        parsedepth ++;
+        ArrayList<Token<?>> ret = parse_inner(source, lst);
+        parsedepth --;
+        return ret;
+    }
+    private static ArrayList<Token<?>> parse_inner(String source, ArrayList<Token<?>> lst) {// parse source file into token array
         try (FileInputStream fIn = new FileInputStream(new File(source))) {
             int cchar = fIn.read();// current character
+            boolean aftnewl = true;
             while (cchar != -1) {// read file contents
+                if (cchar == '\n' || (aftnewl && Character.isWhitespace(cchar))) {// check for validity of certain statements
+                    aftnewl = true;
+                    cchar = fIn.read();
+                    continue;
+                }
+                if (aftnewl && cchar == '#') {// preprocessor directive
+                    String[] flin;
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        cchar = fIn.read();
+                        while (cchar != -1) {
+                            if (cchar == '\n') {
+                                break;
+                            }
+                            sb.appendCodePoint(cchar);
+                            cchar = fIn.read();
+                        }
+                        String[] manip = sb.toString().split("\"");
+                        for (int i = 1; i < manip.length; i += 2) {
+                            manip[i] = manip[i].replace(' ', '\u0007');
+                        }
+                        flin = String.join("", manip).split("[\\s]");
+                        for (int i = 0; i < flin.length; i ++) {
+                            flin[i] = flin[i].replace('\u0007', ' ');
+                        }
+                    }
+                    if (flin[0].equalsIgnoreCase("nocore")) {
+                        usecore = false;
+                        continue;
+                    } else if (usecore && !coreused) {
+                        lst = parse(resolveStdlib("stdcore.dhulb").toString(), lst);
+                        coreused = true;
+                    }
+                    if (flin[0].equalsIgnoreCase("import")) {
+                        if (flin.length < 2) {
+                            SDhulb.wasErr = true;
+                            SDhulb.errMsg = "incomplete import statement";
+                            return lst;
+                        }
+                        String pat;
+                        if (flin[1].charAt(0) == '<') {
+                            pat = resolveStdlib(flin[1].substring(1, flin[1].length()-1)).toString();
+                        } else {
+                            pat = Path.of(source, flin[1]).toString();
+                        }
+                        if (!pat.matches("^.*\\.[a-zA-Z0-9]+$")) {
+                            pat = pat + ".dhulb";
+                        }
+                        lst = parse(pat, lst);
+                    } else if (flin[0].equalsIgnoreCase("info")) {
+                        System.out.println(flin[1]);
+                    }
+                    continue;
+                }
+                aftnewl = false;
                 if (cchar == '/') {// lots of stuff starts with slashes
                     int tchar = fIn.read();// test character
                     if (tchar == -1) {// check for EOF
@@ -201,6 +280,7 @@ public class SourceParser {
                         } else {
                             lst.add(new Token<String>(TokenType.Word, tok));
                         }
+                        continue;
                     }
                 }
                 cchar = fIn.read();
@@ -212,7 +292,7 @@ public class SourceParser {
             for (StackTraceElement st : ste) {
                 sb.append(st.toString()+"\n");
             }
-            SDhulb.errMsg = sb.toString();
+            SDhulb.errMsg = sb.toString()+"SOURCE: "+source;
         }
         return postprocess(lst);
     }

@@ -1,19 +1,7 @@
-/*
-@Dhulb
-comment
-*/
-/&
-/*text asm*/
-&/
-/%
-/*data asm*/
-%/
+/*#nocore*/
+#import <stdio>
 
-0;
-10.1f64;
-20s64;
-99s16;
-30s8;
-s8;
-
-**u8 x = 0;
+u8 main(**u8 argv, u16 argc) {
+    print("Hello, world!");
+    return 0;
+}
