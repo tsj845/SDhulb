@@ -1,19 +1,21 @@
 package SDhulb;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SDhulb { /*Built not to handle: non UTF-8 source files  */
-    static String vStr = "0.0.0.7"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
+    static final String vStr = "0.0.0.8"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
 
     /*addr is same size as int
      * *x = addr*x
     */
+    public static final String fileExt = "sdlb";
     public static ArrayList<String> typlst = new ArrayList<>();
     public static boolean wasErr = false;
     public static String errMsg = null;
-    public static char[] typchars = new char[]{' ', '$', '(', ')', '*', ',', '<', '>'};
-    public static String[] keywords = new String[]{"as", "break", "byref", "byval", "class", "continue", "else", "extends", "false", "for", "goto", "if", "implements", "imply", "interface", "jump", "null", "return", "static", "struct", "structure", "this", "to", "true", "typealias", "typedef", "typefullalias", "while"};
+    public static final char[] typchars = new char[]{' ', '$', '(', ')', '*', ',', '<', '>'};
+    public static final String[] keywords = new String[]{"as", "break", "byref", "byval", "class", "continue", "else", "extends", "false", "for", "goto", "if", "implements", "imply", "interface", "jump", "null", "return", "static", "struct", "structure", "this", "to", "true", "typealias", "typedef", "typefullalias", "while"};
     public static boolean isValidTypeChar(char test) {
         int min = 0;
         int max = typchars.length;
@@ -100,6 +102,16 @@ public class SDhulb { /*Built not to handle: non UTF-8 source files  */
                 return;
             }
             System.out.println(Arrays.toString(res.toArray()));
+        } else {
+            ArrayList<Token<?>> res = SourceParser.parse(args[0]);
+            if (wasErr) {
+                Fmt.printErr(errMsg);
+                return;
+            }
+            Compiler.compile(res, Path.of(args[1]));
+            if (wasErr) {
+                Fmt.printErr(errMsg);
+            }
         }
     }
 }

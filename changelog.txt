@@ -5,3 +5,4 @@
 05-13-2023, commit 0005: (SDhulb.java, SourceParser.java) fixed exceptions
 05-23-2023, commit 0006: (SDhulb.java, SourceParser.java) added types
 05-25-2023, commit 0007: (VARIOUS) started preprocessor directives
+06-12-2023, commit 0008: (VARIOUS) added more preprocessor directives

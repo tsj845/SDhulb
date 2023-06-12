@@ -5,16 +5,30 @@ import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 public class SourceParser {
     private static boolean coreused = false;
     private static boolean usecore = true;
-    private static int parsedepth = 0;
     private static HashSet<String> imported = new HashSet<>();
+    private static HashMap<String, String> defined = new HashMap<>();
     public static String stdlibpath = ".";
+    private static ScriptEngine javaScriptEngine = new ScriptEngineManager().getEngineByName("js");
     public static Path resolveStdlib(String name) {
         return Path.of(stdlibpath, name);
+    }
+    private static boolean parseIf (String[] line) throws Exception {
+        line[0] = "";
+        for (int i = 1; i < line.length; i ++) {
+            if (defined.containsKey(line[i])) {
+                line[i] = defined.get(line[i]);
+            }
+        }
+        return (Boolean) javaScriptEngine.eval(String.join("", line));
     }
     private static ArrayList<Token<?>> postprocess(ArrayList<Token<?>> lst) {
         int i = 0;
@@ -88,9 +102,7 @@ public class SourceParser {
             return lst;
         }
         imported.add(abs);
-        parsedepth ++;
         ArrayList<Token<?>> ret = parse_inner(source, lst);
-        parsedepth --;
         return ret;
     }
     private static ArrayList<Token<?>> parse_inner(String source, ArrayList<Token<?>> lst) {// parse source file into token array
@@ -128,7 +140,10 @@ public class SourceParser {
                         usecore = false;
                         continue;
                     } else if (usecore && !coreused) {
-                        lst = parse(resolveStdlib("stdcore.dhulb").toString(), lst);
+                        lst = parse(resolveStdlib("stdcore.sdlb").toString(), lst);
+                        if (SDhulb.wasErr) {
+                            return lst;
+                        }
                         coreused = true;
                     }
                     if (flin[0].equalsIgnoreCase("import")) {
@@ -144,11 +159,24 @@ public class SourceParser {
                             pat = Path.of(source, flin[1]).toString();
                         }
                         if (!pat.matches("^.*\\.[a-zA-Z0-9]+$")) {
-                            pat = pat + ".dhulb";
+                            pat = pat + "." + SDhulb.fileExt;
                         }
                         lst = parse(pat, lst);
+                        if (SDhulb.wasErr) {
+                            return lst;
+                        }
                     } else if (flin[0].equalsIgnoreCase("info")) {
-                        System.out.println(flin[1]);
+                        Fmt.printInfo(flin[1]);
+                    } else if (flin[0].equalsIgnoreCase("warn")) {
+                        Fmt.printWarn(flin[1]);
+                    } else if (flin[0].equalsIgnoreCase("error")) {
+                        SDhulb.errMsg = "\nPP DIRECTIVE ERR:\n" + flin[1];
+                        SDhulb.wasErr = true;
+                        return lst;
+                    } else if (flin[0].equalsIgnoreCase("define")) {
+                        defined.put(flin[1], flin[2]);
+                    } else if (flin[0].equalsIgnoreCase("if")) {
+                        //TODO: implement ifs
                     }
                     continue;
                 }

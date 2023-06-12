@@ -1,6 +1,12 @@
 /*#nocore*/
 #import <stdio>
 
+#define "TARGET" "MACOS64"
+
+#if TARGET != "MACOS64"
+    #error "unsupported target"
+#endif
+
 u8 main(**u8 argv, u16 argc) {
     print("Hello, world!");
     return 0;
