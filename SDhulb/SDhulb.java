@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SDhulb { /*Built not to handle: non UTF-8 source files  */
-    static final String vStr = "0.0.0.8"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
+    static final String vStr = "0.0.0.9"; /*Rightmost: incremented every commit. Second from right: incremented upon feature implementation. Second from left: incremented upon implementation of a set of related features. Leftmost: incremented every breaking change. NO NUMBERS INCREMENTED FROM COMMITS CONSISTING OF COMMENTS EXCLUSIVELY */
 
     /*addr is same size as int
      * *x = addr*x

@@ -2,6 +2,7 @@
 #import <stdio>
 
 #define "TARGET" "MACOS64"
+#say "TARGET"
 
 #if TARGET != "MACOS64"
     #error "unsupported target"

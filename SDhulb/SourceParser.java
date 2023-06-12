@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Stack;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -17,6 +18,7 @@ public class SourceParser {
     private static HashSet<String> imported = new HashSet<>();
     private static HashMap<String, String> defined = new HashMap<>();
     public static String stdlibpath = ".";
+    private static Stack<Boolean> ifstack = new Stack<>();
     private static ScriptEngine javaScriptEngine = new ScriptEngineManager().getEngineByName("js");
     public static Path resolveStdlib(String name) {
         return Path.of(stdlibpath, name);
@@ -105,6 +107,42 @@ public class SourceParser {
         ArrayList<Token<?>> ret = parse_inner(source, lst);
         return ret;
     }
+    private static int ifSkip(FileInputStream fIn) throws Exception {
+        int cchar = fIn.read();
+        boolean nl = true;
+        while (cchar != -1) {
+            if (cchar == '\n' || (cchar == ' ' && nl)) {
+                cchar = fIn.read();
+                continue;
+            }
+            if (nl && cchar == '#') {
+                String[] flin;
+                {
+                    StringBuilder sb = new StringBuilder();
+                    cchar = fIn.read();
+                    while (cchar != -1) {
+                        if (cchar == '\n') {
+                            break;
+                        }
+                        sb.appendCodePoint(cchar);
+                        cchar = fIn.read();
+                    }
+                    String[] manip = sb.toString().split("(?<!\\\\)\"");
+                    for (int i = 1; i < manip.length; i += 2) {
+                        manip[i] = manip[i].replace(' ', '\u0007');
+                    }
+                    flin = String.join("", manip).split("[\\s]");
+                    for (int i = 0; i < flin.length; i ++) {
+                        flin[i] = flin[i].replace('\u0007', ' ').replace("\\\"", "\"");
+                    }
+                }
+                if (flin[0].equalsIgnoreCase("if")) {
+                    //
+                }
+            }
+        }
+        return cchar;
+    }
     private static ArrayList<Token<?>> parse_inner(String source, ArrayList<Token<?>> lst) {// parse source file into token array
         try (FileInputStream fIn = new FileInputStream(new File(source))) {
             int cchar = fIn.read();// current character
@@ -127,13 +165,13 @@ public class SourceParser {
                             sb.appendCodePoint(cchar);
                             cchar = fIn.read();
                         }
-                        String[] manip = sb.toString().split("\"");
+                        String[] manip = sb.toString().split("(?<!\\\\)\"");
                         for (int i = 1; i < manip.length; i += 2) {
                             manip[i] = manip[i].replace(' ', '\u0007');
                         }
                         flin = String.join("", manip).split("[\\s]");
                         for (int i = 0; i < flin.length; i ++) {
-                            flin[i] = flin[i].replace('\u0007', ' ');
+                            flin[i] = flin[i].replace('\u0007', ' ').replace("\\\"", "\"");
                         }
                     }
                     if (flin[0].equalsIgnoreCase("nocore")) {
@@ -175,8 +213,14 @@ public class SourceParser {
                         return lst;
                     } else if (flin[0].equalsIgnoreCase("define")) {
                         defined.put(flin[1], flin[2]);
+                    } else if (flin[0].equalsIgnoreCase("say")) {
+                        Fmt.printInfo("PP VAR (" + flin[1] + ") = (" + defined.get(flin[1]) + ")");
                     } else if (flin[0].equalsIgnoreCase("if")) {
-                        //TODO: implement ifs
+                        boolean r = parseIf(flin);
+                        ifstack.push(r);
+                        if (!r) {
+                            cchar = ifSkip(fIn);
+                        }
                     }
                     continue;
                 }
